@@ -10,7 +10,7 @@ const DashboardHeader = ({ isDark, toggleTheme }) => {
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
             <div className="w-6 h-6 bg-white rounded-sm opacity-90"></div>
           </div>
-          <h1 className={`${isDark ? 'text-white' : 'text-gray-900'} text-xl font-semibold`}>DocPixie</h1>
+          <h1 className={`${isDark ? 'text-white' : 'text-gray-900'} text-xl font-semibold`}>DogPic</h1>
         </div>
 
         {/* Right side */}
@@ -42,7 +42,7 @@ const DashboardHeader = ({ isDark, toggleTheme }) => {
               <User className="w-5 h-5 text-white" />
             </div>
             <div className={isDark ? 'text-white' : 'text-gray-900'}>
-              <div className="font-medium">kienle</div>
+              <div className="font-medium">Name</div>
               <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Software Engineer</div>
             </div>
           </div>
