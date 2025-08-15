@@ -6,8 +6,8 @@ class Space(Base):
     __tablename__ = "spaces"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    description = Column(String, nullable=True)
-    icon = Column(String, default="folder")
+    name = Column(String(255), index=True)
+    description = Column(String(500), nullable=True)
+    icon = Column(String(50), default="folder")
     owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())

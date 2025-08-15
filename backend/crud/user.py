@@ -16,10 +16,10 @@ def create_user(db: Session, user: schemas_user.UserCreate):
     db_user = models_user.User(
         name=user.name,
         email=user.email,
-        phone=user.phone,
         job_title=user.job_title,
-        company=user.company,
-        location=user.location,
+        phone="",  # Default empty string for optional fields
+        company=None,
+        location=None,
         password_hash=security.get_password_hash(user.password)
     )
     db.add(db_user)

@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, FolderOpen, Palette, FileText, Briefcase, Target, Lightbulb, Rocket, Zap, BarChart3, Building, Wrench } from 'lucide-react';
-import { createSpace } from '../services/spaceService';
+import { updateSpace } from '../services/spaceService';
 
-const CreateSpaceModal = ({ isOpen, onClose, isDark, onSpaceCreated }) => {
-  const [selectedIcon, setSelectedIcon] = useState('folder');
-  const [spaceName, setSpaceName] = useState('');
-  const [description, setDescription] = useState('');
+const EditSpaceModal = ({ isOpen, onClose, isDark, space, onSpaceUpdated }) => {
+  const [selectedIcon, setSelectedIcon] = useState(space?.icon || 'folder');
+  const [spaceName, setSpaceName] = useState(space?.name || '');
+  const [description, setDescription] = useState(space?.description || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Cập nhật state khi prop space thay đổi
+  useEffect(() => {
+    if (space) {
+      setSelectedIcon(space.icon || 'folder');
+      setSpaceName(space.name || '');
+      setDescription(space.description || '');
+    }
+  }, [space]);
 
   const iconOptions = [
     { id: 'folder', icon: FolderOpen, color: 'bg-yellow-500' },
@@ -44,43 +53,43 @@ const CreateSpaceModal = ({ isOpen, onClose, isDark, onSpaceCreated }) => {
         icon: selectedIcon
       };
       
-      // Gọi API tạo space
-      const newSpace = await createSpace(spaceData);
+      // Gọi API cập nhật space
+      const updatedSpace = await updateSpace(space.id, spaceData);
       
       // Gọi callback nếu được cung cấp
-      if (onSpaceCreated) {
-        onSpaceCreated(newSpace);
+      if (onSpaceUpdated) {
+        onSpaceUpdated(updatedSpace);
       }
       
-      // Reset form và đóng modal
-      setSpaceName('');
-      setDescription('');
-      setSelectedIcon('folder');
+      // Đóng modal
       onClose();
     } catch (err) {
-      console.error('Error creating space:', err);
-      setError(err.message || 'Failed to create space. Please try again.');
+      console.error('Error updating space:', err);
+      setError(err.message || 'Failed to update space. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    setSpaceName('');
-    setDescription('');
-    setSelectedIcon('folder');
+    // Reset form về giá trị ban đầu
+    if (space) {
+      setSelectedIcon(space.icon || 'folder');
+      setSpaceName(space.name || '');
+      setDescription(space.description || '');
+    }
     setError(null);
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !space) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl border shadow-2xl w-full max-w-lg`}>
         {/* Header */}
         <div className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-          <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Create a New Space</h2>
+          <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Edit Space</h2>
           <button
             onClick={handleCancel}
             className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'} p-1 rounded-lg hover:bg-gray-700 transition-colors`}
@@ -98,11 +107,6 @@ const CreateSpaceModal = ({ isOpen, onClose, isDark, onSpaceCreated }) => {
             </div>
           )}
           
-          {/* Description */}
-          <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm mb-6`}>
-            A space is where you store and chat about your documents. Start by giving it a name.
-          </p>
-
           {/* Name field */}
           <div className="mb-6">
             <label className={`block text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>
@@ -192,10 +196,10 @@ const CreateSpaceModal = ({ isOpen, onClose, isDark, onSpaceCreated }) => {
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Creating...</span>
+                  <span>Updating...</span>
                 </>
               ) : (
-                <span>Create</span>
+                <span>Update</span>
               )}
             </button>
           </div>
@@ -205,4 +209,4 @@ const CreateSpaceModal = ({ isOpen, onClose, isDark, onSpaceCreated }) => {
   );
 };
 
-export default CreateSpaceModal;
+export default EditSpaceModal;

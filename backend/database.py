@@ -2,10 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Use SQLite for development, change to PostgreSQL or MySQL for production
-SQLALCHEMY_DATABASE_URL = "sqlite:///./ai_tutor.db"
+# Use MySQL for production
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:kienad255@localhost/ai_tutor"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()

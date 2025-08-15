@@ -1,7 +1,49 @@
-import React from 'react';
-import { User } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { getCurrentUser } from '../services/UserService';
+import { clearAuthData } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardHeader = ({ isDark, toggleTheme }) => {
+  const [user, setUser] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Lấy thông tin người dùng từ UserService
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+  }, []);
+
+  // Đóng dropdown khi click bên ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Hiển thị thông tin người dùng thực sự từ response của API
+  const displayName = user ? user.name : 'User';
+  const displayRole = user ? (user.job_title || 'User') : 'User';
+  const displayEmail = user ? user.email : '';
+
+  const handleLogout = () => {
+    // Xóa thông tin xác thực khỏi localStorage
+    clearAuthData();
+    // Chuyển hướng đến trang đăng nhập
+    navigate('/login');
+  };
+
   return (
     <header className={`${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-b px-6 py-4 w-full`}>
       <div className="flex items-center justify-between w-full max-w-none">
@@ -37,14 +79,78 @@ const DashboardHeader = ({ isDark, toggleTheme }) => {
           </span> */}
 
           {/* User profile */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div className={isDark ? 'text-white' : 'text-gray-900'}>
-              <div className="font-medium">Name</div>
-              <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Software Engineer</div>
-            </div>
+          <div className="relative" ref={dropdownRef}>
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center space-x-3 focus:outline-none"
+            >
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className={`text-left ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <div className="font-medium text-sm">{displayName}</div>
+                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{displayRole}</div>
+              </div>
+            </button>
+
+            {/* Dropdown menu */}
+            {isDropdownOpen && (
+              <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg ${
+                isDark 
+                  ? 'bg-gray-800 border border-gray-700' 
+                  : 'bg-white border border-gray-200'
+              } py-1 z-50`}>
+                <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                  <p className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {displayName}
+                  </p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {displayEmail}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    // Xử lý khi nhấn vào Profile
+                    // Có thể chuyển hướng đến trang profile
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`flex items-center w-full px-4 py-2 text-sm ${
+                    isDark 
+                      ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <UserIcon className="w-4 h-4 mr-3" />
+                  Profile
+                </button>
+                <button
+                  onClick={() => {
+                    // Xử lý khi nhấn vào Settings
+                    // Có thể chuyển hướng đến trang settings
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`flex items-center w-full px-4 py-2 text-sm ${
+                    isDark 
+                      ? 'text-gray-300 hover:bg-gray-700 hover:text-white' 
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 mr-3" />
+                  Settings
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className={`flex items-center w-full px-4 py-2 text-sm ${
+                    isDark 
+                      ? 'text-red-400 hover:bg-gray-700 hover:text-red-300' 
+                      : 'text-red-600 hover:bg-gray-100 hover:text-red-800'
+                  }`}
+                >
+                  <LogOut className="w-4 h-4 mr-3" />
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

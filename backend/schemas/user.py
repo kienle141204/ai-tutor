@@ -6,10 +6,7 @@ from typing import Optional
 class UserBase(BaseModel):
     name: str
     email: EmailStr
-    phone: str
     job_title: Optional[str] = None
-    company: Optional[str] = None
-    location: Optional[str] = None
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
@@ -24,6 +21,9 @@ class User(UserBase):
     id: int
     is_verified: bool
     created_at: datetime
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
 
     class Config:
         orm_mode = True

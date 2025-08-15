@@ -1,58 +1,17 @@
 import React, { useState } from 'react';
 import { Home, Sun, PanelLeftClose, PanelLeftOpen, Search, Plus, MessageSquare, FileText, File, Image, Video, Music } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useConversations } from '../contexts/ConversationContext';
+import ConversationItem from './ConversationItem';
 
-const Sidebar = ({ isOpen, onToggle }) => {
+const Sidebar = ({ isOpen, onToggle, documents = [], currentSpaceId }) => {
   const [activeTab, setActiveTab] = useState('conversations');
-
-  const conversations = [
-    { id: 1, title: 'New Chat', model: 'Flash', time: '06:47', isActive: true },
-    { id: 2, title: 'xin chào bạn, tôi có thể', model: 'Flash', time: '06:35', isActive: false },
-    { id: 3, title: 'xin chào bạn, tôi có thể', model: 'Flash', time: '06:35', isActive: false }
-  ];
-
-  const documents = [
-    { 
-      id: 1, 
-      name: 'Báo cáo tài chính Q4.pdf', 
-      type: 'pdf', 
-      size: '2.4 MB', 
-      modified: '2 hours ago',
-      isActive: false 
-    },
-    { 
-      id: 2, 
-      name: 'Kế hoạch marketing 2024.docx', 
-      type: 'docx', 
-      size: '1.8 MB', 
-      modified: '1 day ago',
-      isActive: true 
-    },
-    { 
-      id: 3, 
-      name: 'Presentation.pptx', 
-      type: 'pptx', 
-      size: '5.2 MB', 
-      modified: '3 days ago',
-      isActive: false 
-    },
-    { 
-      id: 4, 
-      name: 'Data analysis.xlsx', 
-      type: 'xlsx', 
-      size: '892 KB', 
-      modified: '1 week ago',
-      isActive: false 
-    },
-    { 
-      id: 5, 
-      name: 'design-mockup.png', 
-      type: 'image', 
-      size: '3.1 MB', 
-      modified: '2 weeks ago',
-      isActive: false 
-    }
-  ];
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { conversations, deleteConversation } = useConversations();
+  
+  // Lấy conversationId từ URL
+  const currentConversationId = location.pathname.split('/').pop();
 
   const getFileIcon = (type) => {
     switch (type) {
@@ -168,7 +127,18 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 </div>
 
                 {/* New Conversation Button */}
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 mb-4 flex items-center justify-center space-x-2 transition-colors">
+                <button 
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 px-4 mb-4 flex items-center justify-center space-x-2 transition-colors"
+                  onClick={() => {
+                    if (currentSpaceId) {
+                      navigate(`/chat/${currentSpaceId}`);
+                    } else {
+                      // Nếu không có currentSpaceId, sử dụng spaceId từ conversation đầu tiên nếu có
+                      const firstSpaceId = conversations.length > 0 ? conversations[0].space_id : 1;
+                      navigate(`/chat/${firstSpaceId}`);
+                    }
+                  }}
+                >
                   <Plus size={16} />
                   <span>New Conversation</span>
                 </button>
@@ -176,23 +146,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                 {/* Conversation List */}
                 <div className="px-0 space-y-2">
                   {conversations.map((conv) => (
-                    <div
-                      key={conv.id}
-                      className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                        conv.isActive
-                          ? 'bg-blue-600/20 border border-blue-600/30'
-                          : 'bg-gray-700 hover:bg-gray-600'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm truncate">{conv.title}</h3>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-xs text-gray-400">{conv.time}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <ConversationItem key={conv.id} conversation={conv} />
                   ))}
                 </div>
               </>
@@ -234,7 +188,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                     >
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-0.5">
-                          {getFileIcon(doc.type)}
+                          {getFileIcon(doc.file_type)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-medium text-sm truncate" title={doc.name}>
@@ -243,7 +197,9 @@ const Sidebar = ({ isOpen, onToggle }) => {
                           <div className="flex items-center space-x-2 mt-1">
                             <span className="text-xs text-gray-400">{doc.size}</span>
                             <span className="text-xs text-gray-500">•</span>
-                            <span className="text-xs text-gray-400">{doc.modified}</span>
+                            <span className="text-xs text-gray-400">
+                              {new Date(doc.modified_at).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -280,7 +236,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                     }`}
                     title={doc.name}
                   >
-                    {getFileIcon(doc.type)}
+                    {getFileIcon(doc.file_type)}
                   </div>
                 ))
             }
